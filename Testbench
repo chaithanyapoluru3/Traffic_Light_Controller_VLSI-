@@ -1,0 +1,32 @@
+TEST BENCH:
+
+`timescale 1ns / 1ps
+
+module Traffic_Light_Controller_Cross_Shaped_TB;
+    reg clk;
+    reg rst;
+    wire [2:0] light_R1; // Road 1 lights (North)
+    wire [2:0] light_R2; // Road 2 lights (East)
+    wire [2:0] light_R3; // Road 3 lights (South)
+    wire [2:0] light_R4; // Road 4 lights (West)
+
+    Traffic_Light_Controller_Cross_Shaped uut (
+        .clk(clk),
+        .rst(rst),
+        .light_R1(light_R1),
+        .light_R2(light_R2),
+        .light_R3(light_R3),
+        .light_R4(light_R4)
+    );
+
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10ns clock period
+    end
+
+    initial begin
+        rst = 1;
+        #20 rst = 0; // Release reset after 20ns
+        #2000 $finish; // End the simulation after 2000ns
+    end
+endmodule
