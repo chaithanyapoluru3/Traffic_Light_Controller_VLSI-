@@ -23,14 +23,15 @@ In this diagram:
 
 
 ## BINARY INDICATIONS:
-<br> 4 - RED(100)
-<br> 2 - YELLOW(010)
-<br> 1 - GREEN (001)
-<br> 3 - turn LEFT/RIGHT(011)
+<br> 0 - RED(00)
+<br> 2 - YELLOW(10)
+<br> 1 - GREEN (01)
+
 
 
 ## OUTPUT WAVEFORM: 
-![Screenshot (264)](https://github.com/user-attachments/assets/d8029144-9e2c-4b2f-b2d7-d2b33c240c4d)
+![Screenshot (289)](https://github.com/user-attachments/assets/1a86cd09-1c15-420b-86a1-6d7e5b99b24a)
+
 
 
 
