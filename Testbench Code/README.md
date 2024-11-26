@@ -1,52 +1,46 @@
 `timescale 1ns / 1ps
 
-module Traffic_Light_Controller_Cross_Shaped_tb;
+module tb_traffic_light_controller;
+    // Parameters
+    reg clk;                   // Clock signal
+    reg reset;                 // Reset signal
+    wire [1:0] vert_light;     // Vertical light output
+    wire [1:0] horiz_light;    // Horizontal light output
+    wire north_turn_east;      // North allows East turn
+    wire south_turn_west;      // South allows West turn
+    wire west_turn_north;      // West allows North turn
+    wire east_turn_south;      // East allows South turn
 
-  // Inputs
-    reg clk;
-    reg rst;
-
-  // Outputs
-    wire [2:0] light_R1; // Road 1 lights (North)
-    wire [2:0] light_R2; // Road 2 lights (East)
-    wire [2:0] light_R3; // Road 3 lights (South)
-    wire [2:0] light_R4; // Road 4 lights (West)
-
-  // Instantiate the Unit Under Test (UUT)
-    Traffic_Light_Controller_Cross_Shaped uut (
+  // Instantiate the traffic light controller
+    traffic_light_controller uut (
         .clk(clk),
-        .rst(rst),
-        .light_R1(light_R1),
-        .light_R2(light_R2),
-        .light_R3(light_R3),
-        .light_R4(light_R4)
+        .reset(reset),
+        .vert_light(vert_light),
+        .horiz_light(horiz_light),
+        .north_turn_east(north_turn_east),
+        .south_turn_west(south_turn_west),
+        .west_turn_north(west_turn_north),
+        .east_turn_south(east_turn_south)
     );
 
-  // Clock generation
+  //Generate clock signal
     initial begin
-        clk = 0;
-        forever #5 clk = ~clk; // 10ns clock period
+        clk = 0; // Initialize clock to 0
+        forever #5 clk = ~clk; // Toggle clock every 5 ns
     end
 
   // Test sequence
     initial begin
-        // Apply reset
-        rst = 1;
-        #10; // Wait for a few clock cycles with reset active
-        rst = 0;
-        
-  // Run simulation for a sufficient amount of time to observe all states
-        #200; // Extend time if needed to observe more transitions
+        // Initialize reset
+        reset = 1; // Assert reset
+        #10; // Wait for 10 ns
+        reset = 0; // Deassert reset
 
-  // Stop simulation
-        $stop;
+  // Wait for a few clock cycles to observe behavior
+        #50; // Observe outputs for 50 ns (5 clock cycles)
+
+  // Additional test cycles
+        #50; // Wait for another 50 ns
+        #50; // Wait for another 50 ns
     end
-
-  // Display the output state at each clock cycle for debugging
-    initial begin
-        $monitor("Time: %0d | State: %0d | R1: %b | R2: %b | R3: %b | R4: %b", 
-                 $time, uut.ps, light_R1, light_R2, light_R3, light_R4);
-    end
-
 endmodule
-
