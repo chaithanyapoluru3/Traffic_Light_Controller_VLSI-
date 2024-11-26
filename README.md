@@ -27,6 +27,9 @@ In this diagram:
 <br> 2 - YELLOW(10)
 <br> 1 - GREEN (01)
 
+Vert_Line is  NORTH&SOUTH
+Horz_Line is  EAST&WEST
+
 
 
 ## OUTPUT WAVEFORM: 
