@@ -1,146 +1,82 @@
-`timescale 1ns / 1ps
-
-module Traffic_Light_Controller_Cross_Shaped (
-    input clk,
-    input rst,
-    output reg [2:0] light_R1, // Road 1 lights (North)
-    output reg [2:0] light_R2, // Road 2 lights (East)
-    output reg [2:0] light_R3, // Road 3 lights (South)
-    output reg [2:0] light_R4  // Road 4 lights (West)
+module traffic_light_controller(
+    input wire clk,            // Clock input
+    input wire reset,          // Reset input
+    output reg [1:0] vert_light,     // Vertical light (00: Red, 01: Green, 10: Yellow)
+    output reg [1:0] horiz_light,    // Horizontal light (00: Red, 01: Green, 10: Yellow)
+    output reg north_turn_east,      // North allows East turn
+    output reg south_turn_west,      // South allows West turn
+    output reg west_turn_north,      // West allows North turn
+    output reg east_turn_south       // East allows South turn
 );
 
-  // State encoding
-    parameter S1 = 0, S2 = 1, S3 = 2, S4 = 3, S5 = 4, S6 = 5, S7 = 6, S8 = 7;
-    reg [3:0] ps; // Present state
-    reg [3:0] count;
-    parameter sec7 = 7, sec5 = 5, sec2 = 2, sec4 = 4;
+// State encoding
+    parameter VERT_GREEN_HORIZ_RED        = 3'b000;
+    parameter VERT_YELLOW_HORIZ_RED       = 3'b001;
+    parameter HORIZ_GREEN_VERT_RED        = 3'b010;
+    parameter HORIZ_YELLOW_VERT_RED       = 3'b011;
+reg [2:0] current_state, next_state;
 
-  // State transition and output logic
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            ps <= S1;
-            count <= 0;
+// State transition and output logic
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            current_state <= VERT_GREEN_HORIZ_RED;
         end else begin
-            case (ps)
-                S1: if (count < sec7) begin
-                        ps <= S1;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S2;
-                        count <= 0;
-                    end
-                S2: if (count < sec2) begin
-                        ps <= S2;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S3;
-                        count <= 0;
-                    end
-                S3: if (count < sec7) begin
-                        ps <= S3;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S4;
-                        count <= 0;
-                    end
-                S4: if (count < sec2) begin
-                        ps <= S4;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S5;
-                        count <= 0;
-                    end
-                S5: if (count < sec5) begin
-                        ps <= S5;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S6;
-                        count <= 0;
-                    end
-                S6: if (count < sec2) begin
-                        ps <= S6;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S7; // Turning state for R1 and R3
-                        count <= 0;
-                    end
-                S7: if (count < sec4) begin
-                        ps <= S7;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S8; // Turning state for R2 and R4
-                        count <= 0;
-                    end
-                S8: if (count < sec4) begin
-                        ps <= S8;
-                        count <= count + 1;
-                    end else begin
-                        ps <= S1;
-                        count <= 0;
-                    end
-                default: ps <= S1;
-            endcase
+            current_state <= next_state;
         end
     end
 
-  // Output logic based on current state (Mealy outputs)
-    always @* begin
-        case (ps)
-            S1: begin
-                light_R1 = 3'b001; // Green for R1 (North-South)
-                light_R2 = 3'b100; // Red for R2
-                light_R3 = 3'b001; // Green for R3
-                light_R4 = 3'b100; // Red for R4
+// Next state logic
+    always @(*) begin
+        case (current_state)
+            VERT_GREEN_HORIZ_RED: begin
+                next_state = VERT_YELLOW_HORIZ_RED;
             end
-            S2: begin
-                light_R1 = 3'b010; // Yellow for R1
-                light_R2 = 3'b100; // Red for R2
-                light_R3 = 3'b010; // Yellow for R3
-                light_R4 = 3'b100; // Red for R4
+            VERT_YELLOW_HORIZ_RED: begin
+                next_state = HORIZ_GREEN_VERT_RED;
             end
-            S3: begin
-                light_R1 = 3'b100; // Red for R1
-                light_R2 = 3'b001; // Green for R2 (East-West)
-                light_R3 = 3'b100; // Red for R3
-                light_R4 = 3'b001; // Green for R4
+            HORIZ_GREEN_VERT_RED: begin
+                next_state = HORIZ_YELLOW_VERT_RED;
             end
-            S4: begin
-                light_R1 = 3'b100; // Red for R1
-                light_R2 = 3'b010; // Yellow for R2
-                light_R3 = 3'b100; // Red for R3
-                light_R4 = 3'b010; // Yellow for R4
-            end
-            S5: begin
-                light_R1 = 3'b001; // Green for R1
-                light_R2 = 3'b100; // Red for R2
-                light_R3 = 3'b001; // Green for R3
-                light_R4 = 3'b100; // Red for R4
-            end
-            S6: begin
-                light_R1 = 3'b010; // Yellow for R1
-                light_R2 = 3'b100; // Red for R2
-                light_R3 = 3'b010; // Yellow for R3
-                light_R4 = 3'b100; // Red for R4
-            end
-            S7: begin
-                light_R1 = 3'b011; // Turn left/right for R1
-                light_R2 = 3'b100; // Red for R2
-                light_R3 = 3'b011; // Turn left/right for R3
-                light_R4 = 3'b100; // Red for R4
-            end
-            S8: begin
-                light_R1 = 3'b100; // Red for R1
-                light_R2 = 3'b011; // Turn left/right for R2
-                light_R3 = 3'b100; // Red for R3
-                light_R4 = 3'b011; // Turn left/right for R4
+            HORIZ_YELLOW_VERT_RED: begin
+                next_state = VERT_GREEN_HORIZ_RED;
             end
             default: begin
-                light_R1 = 3'b000; // Off
-                light_R2 = 3'b000; // Off
-                light_R3 = 3'b000; // Off
-                light_R4 = 3'b000; // Off
+                next_state = VERT_GREEN_HORIZ_RED;
+            end
+        endcase
+    end
+
+// Output logic
+    always @(*) begin
+        // Default settings
+        vert_light = 2'b00; // Red
+        horiz_light = 2'b00; // Red
+        north_turn_east = 0;
+        south_turn_west = 0;
+        west_turn_north = 0;
+        east_turn_south = 0;
+
+case (current_state)
+            VERT_GREEN_HORIZ_RED: begin
+                vert_light = 2'b01; // Green for vertical
+                horiz_light = 2'b00; // Red for horizontal
+                north_turn_east = 1;  // North turns East
+                south_turn_west = 1;  // South turns West
+            end
+            VERT_YELLOW_HORIZ_RED: begin
+                vert_light = 2'b10; // Yellow for vertical
+                horiz_light = 2'b00; // Red for horizontal
+            end
+            HORIZ_GREEN_VERT_RED: begin
+                vert_light = 2'b00; // Red for vertical
+                horiz_light = 2'b01; // Green for horizontal
+                west_turn_north = 1;  // West turns North
+                east_turn_south = 1;  // East turns South
+            end
+            HORIZ_YELLOW_VERT_RED: begin
+                vert_light = 2'b00; // Red for vertical
+                horiz_light = 2'b10; // Yellow for horizontal
             end
         endcase
     end
 endmodule
-
